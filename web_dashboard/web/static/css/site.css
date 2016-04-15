@@ -1,0 +1,77 @@
+html{
+    position: relative;
+    min-height: 100%;
+}
+
+body {
+    padding-top: 70px;
+    /* Required padding for .navbar-fixed-top. Remove if using .navbar-static-top. Change if height of navigation changes. */
+    margin-bottom: 40px;
+}
+
+.topMargin20{
+    margin-top: 20px;
+}
+
+.scrollable-menu {
+    height: auto;
+    max-height: 200px;
+    overflow-x: hidden;
+}
+
+#metricTable td {
+    min-width: 175px;
+}
+
+.footer {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    height: 40px;
+}
+
+.form-group-placeholder{
+    margin-bottom: 0;
+}
+
+@media screen and (min-width: 992px) {
+    .form-group-placeholder{
+        height: 34px;
+        margin-bottom: 15px;
+    }
+}
+
+.clickable-element {
+    cursor: pointer;
+}
+
+.row-fit-well {
+    margin-left: 0;
+    margin-right: 0;
+}
+
+.row-fit-panel {
+    margin-left: 0;
+    margin-right: 0;
+}
+
+.tag-selector {
+    margin-left: 12px;
+}
+
+.report-block {
+    margin-top: 24px;
+}
+
+.report-repo-block {
+    margin-top: 12px;
+}
+
+.user-report-block {
+    margin-left: 12px;
+    margin-top: 12px;
+}
+
+.user-report-line {
+    margin-left: 12px;
+}

@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block content %}
+    <div class="row">
+        <div class="col-lg-12 text-center">
+            <h1>GitHub Report Generator</h1>
+        </div>
+    </div>
+{#    <div class="row">#}
+{#        <div class="col-lg-12 text-left">#}
+{#            <p>#}
+{#                Welcome to the GitHub Report Generator.#}
+{#            </p>#}
+{#        </div>#}
+{#    </div>#}
+    <div class="row">
+        <div class="col-lg-12">
+            <h4>Available Repositories</h4>
+            <div id="repoList"></div>
+        </div>
+    </div>
+{% endblock %}
+{% block additional_javascript %}
+    <script type="text/babel" src="static/js/home.js"></script>
+{% endblock %}

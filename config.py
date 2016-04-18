@@ -38,6 +38,8 @@ class Config(object):
     # Secret key for signing cookies
     SECRET_KEY = 'secret cookie key'
 
+    MONGO_CONNECTION = 'mongodb://localhost:27017'
+
     LOG_FILE_NAME = 'unnamed'
 
     REPOSITORIES = [{'Owner': 'jquery',

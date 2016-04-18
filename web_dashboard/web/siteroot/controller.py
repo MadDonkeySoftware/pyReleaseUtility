@@ -3,10 +3,11 @@ import github3
 import injector
 import json
 import datetime
+import pymongo
+import bson
 
 # For pyCharm auto-complete
 from flask import Config
-from github3.repos import Repository
 from github3.repos.tag import RepoTag
 from github3.pulls import PullRequest
 
@@ -54,7 +55,70 @@ def get_tags(config, owner, name):
 @injector.inject(config=flask.Config)
 def generate_report(config):
     form_data = json.loads(flask.request.data.decode('utf-8'))
+    return_data = _build_and_save_report(config, form_data)
+
+    return json.dumps(return_data)
+
+
+@mod.route('/export_report/')
+@injector.inject(config=flask.Config)
+def export_report(config=flask.Config):
+    export_id = flask.request.args['ExportId']
+    data = _load_saved_report(config, export_id)['data']
+
+    # TODO: Format the report for export.
+    # Header block
+    export_lines = ['Generated: {generated}\r\n'
+                    '\r\n'.format(generated=data['GeneratedAt'])
+                    ]
+
+    for repo in data['Repos']:
+        repo_name = '{owner}/{name}'.format(
+                    owner=repo['Owner'],
+                    name=repo['Name'])
+        export_lines.append(
+            'Repository: {repository}\r\n'
+            'From: {from_tag}\r\n'
+            'To: {to_tag}\r\n'
+            '\r\n'.format(repository=repo_name, from_tag=repo['FromTag'], to_tag=repo['ToTag'])
+        )
+
+        for commit_group in repo['CommitGroups']:
+            export_lines.append('    {author}\r\n'
+                                '\r\n'.format(author=commit_group['Author']))
+            for pr in commit_group['PullRequests']:
+                export_lines.append(
+                    '        {title} -- {url}\r\n'.format(
+                        title=pr['title'],
+                        url=pr['url'])
+                )
+
+            export_lines.append('\r\n')
+
+    response = flask.make_response(''.join(export_lines))
+    response.headers['Content-Disposition'] = 'attachment; filename=' + export_id + '.txt'
+
+    return response
+
+
+def _get_repo_data(config, owner, name):
+    """
+    :type config: Config
+    :type owner: str
+    :type name: str
+    :rtype: dict
+    """
+    for d in config['REPOSITORIES']:
+        if d['Owner'] == owner and d['Name'] == name:
+            return d
+
+    return None
+
+
+def _build_and_save_report(config, form_data):
     repos = []
+    mongo_client = pymongo.MongoClient(config['MONGO_CONNECTION'])
+    db = mongo_client['pyReleaseUtil']
 
     for item in form_data:
         owner = item['Owner']
@@ -101,28 +165,29 @@ def generate_report(config):
             })
 
         repos.append({
-                "Owner": owner,
-                "Name": name,
-                "FromTag": item['FromTag'],
-                "ToTag": item['ToTag'],
-                "CommitGroups": commit_groups
+            "Owner": owner,
+            "Name": name,
+            "FromTag": item['FromTag'],
+            "ToTag": item['ToTag'],
+            "CommitGroups": commit_groups
         })
 
     return_data = {'GeneratedAt': datetime.datetime.now().strftime("%c"),
                    'Repos': repos}
 
-    return json.dumps(return_data)
+    result = db['reports'].insert_one({
+        'createdAt': datetime.datetime.utcnow(),
+        'data': return_data
+    })
+
+    return_data['ExportId'] = str(result.inserted_id)
+
+    return return_data
 
 
-def _get_repo_data(config, owner, name):
-    """
-    :type config: Config
-    :type owner: str
-    :type name: str
-    :rtype: dict
-    """
-    for d in config['REPOSITORIES']:
-        if d['Owner'] == owner and d['Name'] == name:
-            return d
-
-    return None
+def _load_saved_report(config, id):
+    mongo_client = pymongo.MongoClient(config['MONGO_CONNECTION'])
+    db = mongo_client['pyReleaseUtil']
+    return_data = db['reports'].find_one({"_id": bson.ObjectId(id)})
+    return_data['ExportId'] = str(id)
+    return return_data

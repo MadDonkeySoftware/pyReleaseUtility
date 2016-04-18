@@ -6,6 +6,9 @@ from flask_injector import FlaskInjector, Injector
 from os import path, linesep, makedirs
 from logging import Logger, fatal, Formatter
 from werkzeug.exceptions import NotFound
+from pymongo import MongoClient
+from pymongo.database import Database
+from pymongo.collection import Collection
 
 from web_dashboard.web.siteroot.controller import mod as siteroot_module
 
@@ -41,6 +44,8 @@ def _build_app(config_to_use,
     if not app.config['DEBUG']:
         _install_secret_key(app)
 
+    _setup_database(app.config)
+
     app.register_blueprint(siteroot_module)
 
     injector_ = Injector([WebInitializer(app)])
@@ -68,6 +73,16 @@ def _build_app(config_to_use,
         return render_template('500.html'), 200
 
     return app
+
+
+def _setup_database(config):
+    """
+    :type db: Database
+    """
+    client = MongoClient(config['MONGO_CONNECTION'])
+    col = client['pyReleaseUtil'].reports  # type: Collection
+    col.create_index("createdAt", expireAfterSeconds=900)
+
 
 def main(argv):
     """

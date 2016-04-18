@@ -5,7 +5,7 @@ var ReportUserBlock = React.createClass({displayName: 'ReportUserBlock',
         var i = 0;
         var commitLines = this.props.block.PullRequests.map(function(pr){
             i++;
-            return(<div key={i} className="user-report-line">{pr.title} -- <a href={pr.url}>{pr.url}</a></div>);
+            return(<div key={i} className="user-report-line">{pr.title} -- <a target="_blank" href={pr.url}>{pr.url}</a></div>);
         });
         return(
             <div className="user-report-block">
@@ -85,7 +85,11 @@ var TagSelector = React.createClass({displayName: 'TagSelector',
         });
     },
     onToChanged: function(e){
+        var key = this.props.repo.Owner + '/' + this.props.repo.Name;
         report_selections[key] = {
+            Owner: this.props.repo.Owner,
+            Name: this.props.repo.Name,
+            tags: this.state.tags,
             fromTag: this.state.toTag,
             toTag: $(e.currentTarget).val()
         };
@@ -204,6 +208,9 @@ var RepositoryList = React.createClass({displayName: 'RepositoryList',
             });
         }
     },
+    handleExportReport: function(){
+        $.fileDownload('/export_report/?ExportId=' + this.state.report.ExportId);
+    },
     componentDidMount: function() {
         this.loadData();
     },
@@ -218,7 +225,8 @@ var RepositoryList = React.createClass({displayName: 'RepositoryList',
         return(
             <div>
                 {items}
-                <input type="button" onClick={this.handleGenerateReportClick} value="Generate Report" />
+                <input type="button" className="btn btn-primary" onClick={this.handleGenerateReportClick} value="Generate Report" />
+                {this.state.report != null && this.state.report.ExportId != null ? <input type="button" className="btn" onClick={this.handleExportReport} value="Download Report" /> : null}
                 {this.state.report != null ? <ReportDisplay report={this.state.report} /> : null}
             </div>
         );

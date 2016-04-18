@@ -69,16 +69,16 @@ var TagSelector = React.createClass({displayName: 'TagSelector',
     },
     onFromChanged: function(e){
         var key = this.props.repo.Owner + '/' + this.props.repo.Name;
-        report_selections[key] = {
-            Owner: this.props.repo.Owner,
-            Name: this.props.repo.Name,
-            tags: this.state.tags,
-            fromTag: $(e.currentTarget).val(),
-            toTag: this.state.toTag
-        };
+        var selections = report_selections[key] || {
+                Owner: this.props.repo.Owner,
+                Name: this.props.repo.Name,
+                tags: this.state.tags,
+                fromTag: $(e.currentTarget).val(),
+                toTag: this.state.toTag
+            };
+        selections['fromTag'] = $(e.currentTarget).val();
+        report_selections[key] = selections;
         this.setState({
-            Owner: this.props.repo.Owner,
-            Name: this.props.repo.Name,
             tags: this.state.tags,
             fromTag: $(e.currentTarget).val(),
             toTag: this.state.toTag
@@ -86,13 +86,15 @@ var TagSelector = React.createClass({displayName: 'TagSelector',
     },
     onToChanged: function(e){
         var key = this.props.repo.Owner + '/' + this.props.repo.Name;
-        report_selections[key] = {
-            Owner: this.props.repo.Owner,
-            Name: this.props.repo.Name,
-            tags: this.state.tags,
-            fromTag: this.state.toTag,
-            toTag: $(e.currentTarget).val()
-        };
+        var selections = report_selections[key] || {
+                Owner: this.props.repo.Owner,
+                Name: this.props.repo.Name,
+                tags: this.state.tags,
+                fromTag: this.state.toTag,
+                toTag: $(e.currentTarget).val()
+            };
+        selections['toTag'] = $(e.currentTarget).val();
+        report_selections[key] = selections;
         this.setState({
             tags: this.state.tags,
             fromTag: this.state.fromTag,

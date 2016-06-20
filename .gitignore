@@ -68,3 +68,6 @@ bower_components
 # General project stuff
 logs/
 notes.txt
+
+# Other misc ignores
+*.bak

@@ -1,15 +1,15 @@
 import sys
+from logging import Logger, fatal
+from os import path, linesep
 
-from web_dashboard.web.web_initializer import WebInitializer
 from flask import Flask, render_template, request
 from flask_injector import FlaskInjector, Injector
-from os import path, linesep, makedirs
-from logging import Logger, fatal, Formatter
-from werkzeug.exceptions import NotFound
 from pymongo import MongoClient
 from pymongo.database import Database
 from pymongo.collection import Collection
+from werkzeug.exceptions import NotFound
 
+import web_dashboard.web.web_initializer
 from web_dashboard.web.siteroot.controller import mod as siteroot_module
 
 CONFIG_TO_USE = 'config.Config'
@@ -33,8 +33,6 @@ def _install_secret_key(app, filename='secret_key'):
 def _build_app(config_to_use,
                template_folder='web/templates',
                static_folder='web/static'):
-    """
-    """
 
     app = Flask(__name__,
                 template_folder=template_folder,
@@ -48,7 +46,8 @@ def _build_app(config_to_use,
 
     app.register_blueprint(siteroot_module)
 
-    injector_ = Injector([WebInitializer(app)])
+    injector_ = Injector([
+        web_dashboard.web.web_initializer.WebInitializer(app)])
     FlaskInjector(app=app, injector=injector_)
 
     logger = injector_.get(Logger)  # type: Logger

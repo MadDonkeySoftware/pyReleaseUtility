@@ -1,11 +1,11 @@
 import sys
+import pymongo
 from logging import Logger, fatal
 from os import path, linesep
 
 from flask import Flask, render_template, request
 from flask_injector import FlaskInjector, Injector
 from pymongo import MongoClient
-from pymongo.database import Database
 from pymongo.collection import Collection
 from werkzeug.exceptions import NotFound
 
@@ -76,11 +76,12 @@ def _build_app(config_to_use,
 
 def _setup_database(config):
     """
-    :type db: Database
+    :type config: flask.Config
     """
     client = MongoClient(config['MONGO_CONNECTION'])
     col = client['pyReleaseUtil'].reports  # type: Collection
-    col.create_index("createdAt", expireAfterSeconds=900)
+    col.create_index([('key', pymongo.ASCENDING)])
+    col.create_index('createdAt', expireAfterSeconds=900)
 
 
 def main(argv):

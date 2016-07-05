@@ -4,7 +4,7 @@ import injector
 import json
 import datetime
 import pymongo
-import bson
+import uuid
 
 # For pyCharm auto-complete
 from flask import Config
@@ -175,19 +175,21 @@ def _build_and_save_report(config, form_data):
     return_data = {'GeneratedAt': datetime.datetime.now().strftime("%c"),
                    'Repos': repos}
 
-    result = db['reports'].insert_one({
+    report_key = str(uuid.uuid1())
+    db['reports'].insert_one({
+        'key': report_key,
         'createdAt': datetime.datetime.utcnow(),
         'data': return_data
     })
 
-    return_data['ExportId'] = str(result.inserted_id)
+    return_data['ExportId'] = report_key
 
     return return_data
 
 
-def _load_saved_report(config, id):
+def _load_saved_report(config, report_key):
     mongo_client = pymongo.MongoClient(config['MONGO_CONNECTION'])
     db = mongo_client['pyReleaseUtil']
-    return_data = db['reports'].find_one({"_id": bson.ObjectId(id)})
-    return_data['ExportId'] = str(id)
+    return_data = db['reports'].find_one({'key': report_key})
+    return_data['ExportId'] = str(report_key)
     return return_data

@@ -2,6 +2,7 @@ import sys
 import pymongo
 from logging import Logger, fatal
 from os import path, linesep
+import gevent.wsgi
 
 from flask import Flask, render_template, request
 from flask_injector import FlaskInjector, Injector
@@ -13,6 +14,7 @@ import web_dashboard.web.web_initializer
 from web_dashboard.web.siteroot.controller import mod as siteroot_module
 
 CONFIG_TO_USE = 'config.Config'
+ENV_VAR_KEY = 'PY_RELEASE_UTIL_CONFIG'
 
 
 def _install_secret_key(app, filename='secret_key'):
@@ -37,7 +39,12 @@ def _build_app(config_to_use,
     app = Flask(__name__,
                 template_folder=template_folder,
                 static_folder=static_folder)
+
     app.config.from_object(config_to_use)
+    try:
+        app.config.from_envvar(ENV_VAR_KEY)
+    except RuntimeError:
+        pass
 
     if not app.config['DEBUG']:
         _install_secret_key(app)
@@ -93,9 +100,15 @@ def main(argv):
 
     app = _build_app(config)
 
-    app.run(host=app.config['DASHBOARD_HOST'],
-            port=app.config['DASHBOARD_PORT'],
-            debug=app.config['DEBUG'])
+    if app.config['DEBUG']:
+        app.run(host=app.config['DASHBOARD_HOST'],
+                port=app.config['DASHBOARD_PORT'],
+                debug=True)
+    else:
+        http_server = gevent.wsgi.WSGIServer((app.config['DASHBOARD_HOST'],
+                                              app.config['DASHBOARD_PORT']),
+                                             app)
+        http_server.serve_forever()
 
 if __name__ == '__main__':
     main(sys.argv[1:])

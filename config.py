@@ -40,6 +40,10 @@ class Config(object):
 
     MONGO_CONNECTION = 'mongodb://localhost:27017'
 
+    # Switch to true when running your app for the first time to have the
+    # proper indexes built.
+    SETUP_DB = False
+
     LOG_FILE_NAME = 'unnamed'
 
     REPOSITORIES = [{'Owner': 'jquery',

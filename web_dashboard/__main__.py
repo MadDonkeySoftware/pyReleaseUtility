@@ -49,8 +49,6 @@ def _build_app(config_to_use,
     if not app.config['DEBUG']:
         _install_secret_key(app)
 
-    _setup_database(app.config)
-
     app.register_blueprint(siteroot_module)
 
     injector_ = Injector([
@@ -99,6 +97,9 @@ def main(argv):
     config = argv[0] if len(argv) > 0 else CONFIG_TO_USE
 
     app = _build_app(config)
+
+    if app.config['SETUP_DB']:
+        _setup_database(app.config)
 
     if app.config['DEBUG']:
         app.run(host=app.config['DASHBOARD_HOST'],

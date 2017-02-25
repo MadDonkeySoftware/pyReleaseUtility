@@ -46,17 +46,6 @@ class Config(object):
 
     LOG_FILE_NAME = 'unnamed'
 
-    REPOSITORIES = [{'Owner': 'jquery',
-                     'Name': 'jquery-ui',
-                     'EnterpriseUrl': None,
-                     'ApiKey': 'your_key_here'
-                     },
-                    {'Owner': 'fritogotlayed',
-                     'Name': 'pyReleaseUtility',
-                     'EnterpriseUrl': None,
-                     'ApiKey': 'your_key_here'
-                     }]
-
     def __getitem__(self, item):
         try:
             return getattr(self, item)

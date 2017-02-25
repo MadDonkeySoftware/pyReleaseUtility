@@ -5,7 +5,7 @@ TODO: Write this
 NOTE: This setup guide assumes a basic understanding of python / pip.
 
 * `cd` to the root of this project in your shell of choice.
-* Edit the `config.py` file updating the `REPOSITORIES` list
+* Copy the `example-repositories.yml` to `repositories.yml` file, then update the `repositories` list
     * Owner - The owner of the repository to report on. In this case it would be "fritogotlayed"
     * Name - The name of the repository to report on. In this case it would be "pyReleaseUtility"
     * EnterpriseUrl - If you are running an enterprise github you would enter the short url here. (http://github.company.com)

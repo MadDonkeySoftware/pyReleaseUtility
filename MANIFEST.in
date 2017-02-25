@@ -2,3 +2,4 @@ recursive-include web_dashboard/web/static *
 recursive-include web_dashboard/web/templates *
 include requirements.txt
 include run.py
+include config.py

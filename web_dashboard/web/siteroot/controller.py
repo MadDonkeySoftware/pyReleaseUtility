@@ -1,6 +1,5 @@
 import flask
 import github3
-import injector
 import json
 import datetime
 import pymongo
@@ -21,8 +20,8 @@ def home():
 
 
 @mod.route('/list_repos/')
-@injector.inject(config=flask.Config)
-def list_repos(config):
+def list_repos():
+    config = flask.current_app.config
     repos = []
 
     # Map the available repos so we don't accidentally expose
@@ -35,15 +34,15 @@ def list_repos(config):
 
 
 @mod.route('/get_tags/<owner>/<name>/')
-@injector.inject(config=flask.Config)
-def get_tags(config, owner, name):
+def get_tags(owner, name):
+    config = flask.current_app.config
     tags = []
     repo_data = _get_repo_data(config, owner, name)
 
     if repo_data is not None:
         gh = github3.login(
             token=repo_data['ApiKey'],
-            url=repo_data['EnterpriseUrl'])
+            url=repo_data.get('EnterpriseUrl'))
         repo = gh.repository(owner, name)
         for t in repo.iter_tags():  # type: RepoTag
             tags.append(t.name)
@@ -52,8 +51,8 @@ def get_tags(config, owner, name):
 
 
 @mod.route('/generate_report/', methods=['POST'])
-@injector.inject(config=flask.Config)
-def generate_report(config):
+def generate_report():
+    config = flask.current_app.config
     form_data = json.loads(flask.request.data.decode('utf-8'))
     return_data = _build_and_save_report(config, form_data)
 
@@ -61,8 +60,8 @@ def generate_report(config):
 
 
 @mod.route('/export_report/')
-@injector.inject(config=flask.Config)
-def export_report(config=flask.Config):
+def export_report():
+    config = flask.current_app.config
     export_id = flask.request.args['ExportId']
     data = _load_saved_report(config, export_id)['data']
 
@@ -132,7 +131,7 @@ def _build_and_save_report(config, form_data):
         repo_data = _get_repo_data(config, owner, name)
         gh = github3.login(
             token=repo_data['ApiKey'],
-            url=repo_data['EnterpriseUrl'])
+            url=repo_data.get('EnterpriseUrl'))
         repo = gh.repository(owner, name)
         comp = repo.compare_commits(from_tag, to_tag)
 

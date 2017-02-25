@@ -1,6 +1,6 @@
 import sys
 
-from web_dashboard.__main__ import main
+from web_dashboard.server import main
 
 
 if __name__ == '__main__':

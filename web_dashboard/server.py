@@ -1,16 +1,17 @@
+import os
 import sys
 import pymongo
-from logging import Logger, fatal
+import logging
 from os import path, linesep
 import gevent.wsgi
+from web_dashboard import logging_wrapper
+import yaml
 
 from flask import Flask, render_template, request
-from flask_injector import FlaskInjector, Injector
 from pymongo import MongoClient
 from pymongo.collection import Collection
 from werkzeug.exceptions import NotFound
 
-import web_dashboard.web.web_initializer
 from web_dashboard.web.siteroot.controller import mod as siteroot_module
 
 CONFIG_TO_USE = 'config.Config'
@@ -29,7 +30,7 @@ def _install_secret_key(app, filename='secret_key'):
         if not path.isdir(full_path):
             msg += 'mkdir -p {0}'.format(full_path)
         msg += 'head -c 24 /dev/urandom > {0}'.format(full_path)
-        fatal(msg)
+        logging.fatal(msg)
 
 
 def _build_app(config_to_use,
@@ -51,11 +52,8 @@ def _build_app(config_to_use,
 
     app.register_blueprint(siteroot_module)
 
-    injector_ = Injector([
-        web_dashboard.web.web_initializer.WebInitializer(app)])
-    FlaskInjector(app=app, injector=injector_)
-
-    logger = injector_.get(Logger)  # type: Logger
+    logging_wrapper.initialize(app.config, app)
+    logger = logging_wrapper.get_logger()
     logger.info('Application initialized. "{0}" used.'.format(config_to_use))
 
     # Use a generic anonymous function to handle logging 404s
@@ -76,6 +74,9 @@ def _build_app(config_to_use,
         # Use 200 so flask doesn't use it's internal 500 handler
         return render_template('500.html'), 200
 
+    # Import repositories
+    _import_repositories(app)
+
     return app
 
 
@@ -87,6 +88,21 @@ def _setup_database(config):
     col = client['pyReleaseUtil'].reports  # type: Collection
     col.create_index([('key', pymongo.ASCENDING)])
     col.create_index('createdAt', expireAfterSeconds=900)
+
+
+def _import_repositories(app):
+    loc = os.environ.get('RELEASE_UTIL_REPOSITORIES_CONFIG', None)
+    if loc is None:
+        loc = 'repositories.yml'
+        logger = logging_wrapper.get_logger()
+        logger.warning(
+            'Could not find environment variable '
+            'RELEASE_UTIL_REPOSITORIES_CONFIG. Using default value of '
+            '"{location}".'.format(location=loc)
+        )
+    with open(loc, 'r') as f:
+        doc = yaml.load(f)
+        app.config['REPOSITORIES'] = doc['repositories']
 
 
 def main(argv):

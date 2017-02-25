@@ -1,0 +1,15 @@
+---
+repositories: [
+  {
+    Owner: 'jquery',
+    Name: 'jquery-ui',
+#    EnterpriseUrl: None,
+    ApiKey: 'your_key_here'
+  },
+  {
+    Owner: 'MadDonkeySoftware',
+    Name: 'pyReleaseUtility',
+#    EnterpriseUrl: None,
+    ApiKey: 'your_key_here'
+  }
+]

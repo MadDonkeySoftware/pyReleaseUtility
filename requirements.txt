@@ -1,8 +1,8 @@
 pip  # Placed in file because of setup.py
 Flask
 Flask-WTF
-Flask-Injector
 mock
 github3.py
 pymongo
 Gevent
+pyyaml
